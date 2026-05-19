@@ -18,7 +18,7 @@ export function AboutSection() {
                 <h2 className="text-2xl font-semibold tracking-tight">Sobre Mí</h2>
               </div>
               <p className="mt-5 whitespace-pre-line text-sm leading-relaxed text-white/75">
-                ¡Hola! Soy Alexander Cruz, estudiante de Ingeniería de Sistemas en 8.º ciclo,
+                ¡Hola! Soy Alexander Cruz, estudiante de Ingeniería de Sistemas en 9.º ciclo,
                 apasionado por la ciberseguridad, el pentesting y el desarrollo web. Me encanta
                 explorar el mundo de la tecnología, identificar vulnerabilidades y crear soluciones
                 digitales seguras que aporten valor real a las personas y organizaciones.
