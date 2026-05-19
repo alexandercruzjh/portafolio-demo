@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
 
-const ROCKET_SVG_URL = new URL('../assets/rocket.svg', import.meta.url).href
+const ROCKET_JPG_URL = new URL('../assets/rocket.jpg', import.meta.url).href
 
 function clamp01(v) {
   return Math.max(0, Math.min(1, v))
@@ -97,6 +97,56 @@ async function sampleRocketImage(url, maxPoints = 1800) {
     a: (c0.a + c1.a + c2.a + c3.a) / 4,
   }
 
+  const bgOpaque = bg.a > 220
+
+  // Si la imagen es opaca (p.ej. JPG), armamos una máscara de fondo por flood-fill desde bordes.
+  // Esto suele recortar muchísimo mejor el sujeto (cohete) que un simple umbral de luminancia.
+  let bgMask = null
+  if (bgOpaque) {
+    const distToBg = (r, g, b) => Math.abs(r - bg.r) + Math.abs(g - bg.g) + Math.abs(b - bg.b)
+    const floodThreshold = 38
+    const visited = new Uint8Array(w * h)
+    const queue = new Int32Array(w * h)
+    let head = 0
+    let tail = 0
+
+    const tryPush = (idx) => {
+      if (visited[idx]) return
+      const i = idx * 4
+      const r = data[i]
+      const g = data[i + 1]
+      const b = data[i + 2]
+      const a = data[i + 3]
+      if (a < 220) return
+      if (distToBg(r, g, b) > floodThreshold) return
+      visited[idx] = 1
+      queue[tail++] = idx
+    }
+
+    // Seeds: bordes
+    for (let x = 0; x < w; x++) {
+      tryPush(x)
+      tryPush((h - 1) * w + x)
+    }
+    for (let y = 0; y < h; y++) {
+      tryPush(y * w)
+      tryPush(y * w + (w - 1))
+    }
+
+    while (head < tail) {
+      const idx = queue[head++]
+      const x = idx % w
+      const y = (idx / w) | 0
+
+      if (x > 0) tryPush(idx - 1)
+      if (x + 1 < w) tryPush(idx + 1)
+      if (y > 0) tryPush(idx - w)
+      if (y + 1 < h) tryPush(idx + w)
+    }
+
+    bgMask = visited
+  }
+
   // Candidatos + bbox del objeto.
   // Nota: si la imagen no tiene alpha (fondo negro opaco), filtramos por luminancia.
   const candidates = []
@@ -106,8 +156,8 @@ async function sampleRocketImage(url, maxPoints = 1800) {
   let maxY = -Infinity
 
   const alphaThreshold = 50
-  const lumThreshold = 12
-  const bgDistThreshold = 26
+  const lumThreshold = 14
+  const bgDistThreshold = 34
   const pixelStep = Math.max(1, Math.floor(Math.max(w, h) / 420))
 
   for (let y = 0; y < h; y += pixelStep) {
@@ -121,13 +171,22 @@ async function sampleRocketImage(url, maxPoints = 1800) {
       const lum = (r + g + b) / 3
       if (a < alphaThreshold) continue
 
+      const idx = y * w + x
+      if (bgMask && bgMask[idx]) continue
+
       const dist = Math.abs(r - bg.r) + Math.abs(g - bg.g) + Math.abs(b - bg.b)
-      const bgOpaque = bg.a > 220
       const pxOpaque = a > 220
+
+      const maxc = Math.max(r, g, b)
+      const minc = Math.min(r, g, b)
+      const sat = maxc - minc
 
       // Si todo es opaco, separar figura por distancia al color de fondo.
       // Si hay alpha, dejamos pasar más (pero filtramos lo casi-negro para evitar ruido).
-      const isFg = bgOpaque && pxOpaque ? dist > bgDistThreshold : lum >= lumThreshold || dist > 10
+      const isFg =
+        bgOpaque && pxOpaque
+          ? dist > bgDistThreshold && (lum >= lumThreshold || sat > 18)
+          : lum >= lumThreshold || dist > 10
       if (!isFg) continue
 
       minX = Math.min(minX, x)
@@ -298,7 +357,7 @@ export function ParticleRocketCanvas({ sectionRefs }) {
     const initParticles = async () => {
       let pts
       try {
-        pts = await sampleRocketImage(ROCKET_SVG_URL, 1700)
+        pts = await sampleRocketImage(ROCKET_JPG_URL, 1700)
       } catch {
         pts = genFallbackRocketPoints(1200)
       }
