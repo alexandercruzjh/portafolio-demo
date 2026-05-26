@@ -5,33 +5,38 @@ import { GlassCard } from '../components/ui/GlassCard'
 const weeks = [
   {
     title: 'Semana 1',
-    desc: 'Introducción, fundamentos y contexto del curso.',
-    href: 'https://github.com/',
+    desc: 'Fundamentos Web',
+    href: 'https://semanas.vercel.app/semana-1',
   },
   {
     title: 'Semana 2',
-    desc: 'Prácticas iniciales y primeros entregables.',
-    href: 'https://github.com/',
+    desc: 'Diseno de Interfaces (UI/UX)',
+    href: 'https://semanas.vercel.app/semana-2',
   },
   {
     title: 'Semana 3',
-    desc: 'Análisis, evidencias y documentación técnica.',
-    href: 'https://github.com/',
+    desc: 'Bootstrap y Tailwind CSS',
+    href: 'https://semanas.vercel.app/semana-3',
   },
   {
     title: 'Semana 4',
-    desc: 'Ejercicios, reporte y mejoras iterativas.',
-    href: 'https://github.com/',
+    desc: 'JavaScript y TypeScript',
+    href: 'https://semanas.vercel.app/semana-4',
   },
   {
     title: 'Semana 5',
-    desc: 'Aplicación práctica con enfoque en seguridad.',
-    href: 'https://github.com/',
+    desc: 'Framework JS (React)',
+    href: 'https://semanas.vercel.app/semana-5',
   },
   {
     title: 'Semana 6',
-    desc: 'Consolidación final y evidencia de resultados.',
-    href: 'https://github.com/',
+    desc: 'Framework JS: Eventos y Consumo de APIs',
+    href: 'https://semanas.vercel.app/semana-6',
+  },
+  {
+    title: 'Semana 7',
+    desc: 'React Hooks',
+    href: 'https://semanas.vercel.app/semana-7',
   },
 ]
 
